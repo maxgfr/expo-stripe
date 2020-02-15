@@ -1,5 +1,6 @@
 node_modules/**/*
 .expo/*
+.expo-shared/*
 npm-debug.*
 *.jks
 *.p8
@@ -12,5 +13,3 @@ web-report/
 
 # macOS
 .DS_Store
-
-.expo-shared/**/*
