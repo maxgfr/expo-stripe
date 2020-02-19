@@ -7,7 +7,6 @@ const STRIPE_OAUTH_URL="https://api.Stripe.com/oauth/authorize";
 const STRIPE_OAUTH_URL_SERVER="https://api.Stripe.com/oauth/access_token";
 const STRIPE_SCOPES="basic";
 const STRIPE_PK="pk_test_ZF5lBlZVpbU8ca5lzbPIcSij00c6beMC7O";
-const STRIPE_SK="sk_test_qu0Z8ojKQxdr6S7SOclgPgKU006M8Tla43";
 
 export default class StripeConnector {
 
@@ -29,26 +28,43 @@ export default class StripeConnector {
       });
     }
 
-    async pay() {
-      const options = {
-        requiredBillingAddressFields: 'full',
-        prefilledInformation: {
-          billingAddress: {
-            name: 'Gunilla Haugeh',
-            line1: 'Canary Place',
-            line2: '3',
-            city: 'Macon',
-            state: 'Georgia',
-            country: 'US',
-            postalCode: '31217',
-          },
+    async paymentIntentsTransferDirect(payment_method_types, amount, currency, application_fee_amount, stripe_account) {
+      var body = "payment_method_types[]="+payment_method_types+"&amount="+amount+"&currency="+currency+"&application_fee_amount="+application_fee_amount+"&transfer_data[destination]="+stripe_account;
+      fetch("https://api.stripe.com/v1/payment_intents", {
+        body: body,
+        headers: {
+          Authorization: "Basic "+STRIPE_SK,
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-      };
-
-      const token = await stripe.paymentRequestWithCardFormAsync(options);
+        method: "POST"
+      }).then((res) => {
+        console.log(res)
+      })
     }
 
+    async paymentIntentsTransferGroup (amount, currency, payment_method_types, application_fee_amount, transfer_group) {
+      var body = "amount="+amount+"&currency="+usd+"&payment_method_types[]="+payment_method_types+"&application_fee_amount="+application_fee_amount+"&transfer_group="+transfer_group;
+      fetch("https://api.stripe.com/v1/payment_intents", {
+        body: body,
+        headers: {
+          Authorization: "Basic "+STRIPE_PK,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        method: "POST"
+      })
+    }
 
+    async transfer (amount, currency, destination, transfer_group) {
+      var body = "amount="+amount+"&currency="+usd+"&destination="+destination+"&transfer_group="+transfer_group;
+      fetch("https://api.stripe.com/v1/transfers", {
+        body: body,
+        headers: {
+          Authorization: "Basic "+STRIPE_PK,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        method: "POST"
+      })
+    }
 
 
 }
