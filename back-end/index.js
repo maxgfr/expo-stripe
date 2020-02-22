@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+const dotenv = require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SK);
 const app = express();
 const port = 3000;
