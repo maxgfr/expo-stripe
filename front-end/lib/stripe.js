@@ -1,12 +1,8 @@
 import { AsyncStorage } from 'react-native';
 import { PaymentsStripe as Stripe } from 'expo-payments-stripe';
 
-const STRIPE_REDIRECT_URI= AuthSession.getRedirectUrl();
-const STRIPE_BASE_URL="https://api.Stripe.com/v1";
-const STRIPE_OAUTH_URL="https://api.Stripe.com/oauth/authorize";
-const STRIPE_OAUTH_URL_SERVER="https://api.Stripe.com/oauth/access_token";
-const STRIPE_SCOPES="basic";
 const STRIPE_PK="pk_test_ZF5lBlZVpbU8ca5lzbPIcSij00c6beMC7O";
+const BASE_URL="http://localhost:3000/"
 
 export default class StripeConnector {
 
@@ -22,49 +18,61 @@ export default class StripeConnector {
         return this.myInstance;
     }
 
-    constructor(){
-      Stripe.setOptionsAsync({
-        publishableKey: STRIPE_PK
+    constructor() {
+    }
+
+    addFileVerification(file, accountId) {
+      return new Promise((resolve, reject) => {
+        this.uploadDocument(file).then((fileId) => {
+          var body = {
+            accountId: accountId,
+            data: {
+              file: fileId
+            }
+          }
+          fetch(BASE_URL+"updateAccount", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+        })
       });
     }
 
-    async paymentIntentsTransferDirect(payment_method_types, amount, currency, application_fee_amount, stripe_account) {
-      var body = "payment_method_types[]="+payment_method_types+"&amount="+amount+"&currency="+currency+"&application_fee_amount="+application_fee_amount+"&transfer_data[destination]="+stripe_account;
-      fetch("https://api.stripe.com/v1/payment_intents", {
-        body: body,
-        headers: {
-          Authorization: "Basic "+STRIPE_SK,
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        method: "POST"
-      }).then((res) => {
-        console.log(res)
-      })
+    uploadDocument(file) {
+      return new Promise((resolve, reject) => {
+        var fd = new FormData();
+        fd.set('purpose', 'identity_document');
+        fd.set('file', file);
+        fetch('https://files.stripe.com/v1/files', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${STRIPE_PK}`
+          },
+          body: fd
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
     }
 
-    async paymentIntentsTransferGroup (amount, currency, payment_method_types, application_fee_amount, transfer_group) {
-      var body = "amount="+amount+"&currency="+usd+"&payment_method_types[]="+payment_method_types+"&application_fee_amount="+application_fee_amount+"&transfer_group="+transfer_group;
-      fetch("https://api.stripe.com/v1/payment_intents", {
-        body: body,
-        headers: {
-          Authorization: "Basic "+STRIPE_PK,
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        method: "POST"
-      })
+    createStripeAccount(country, type, email, requested_capabilities, business_type, individual, business_profile) {
+      return new Promise((resolve, reject) => {
+        var body = {
+          country: country,
+          type: type,
+          email: email,
+          requested_capabilities: requested_capabilities,
+          business_type: business_type,
+          business_profile: business_profile,
+          individual: individual
+        }
+        fetch(BASE_URL+"createStripeAccount", {
+          body: JSON.stringify(body),
+          headers: { 'Content-type': 'application/json' },
+          method: "POST"
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
     }
-
-    async transfer (amount, currency, destination, transfer_group) {
-      var body = "amount="+amount+"&currency="+usd+"&destination="+destination+"&transfer_group="+transfer_group;
-      fetch("https://api.stripe.com/v1/transfers", {
-        body: body,
-        headers: {
-          Authorization: "Basic "+STRIPE_PK,
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        method: "POST"
-      })
-    }
-
 
 }
