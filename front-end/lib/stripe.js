@@ -1,5 +1,3 @@
-import { AsyncStorage } from 'react-native';
-
 const STRIPE_PK="pk_test_ZF5lBlZVpbU8ca5lzbPIcSij00c6beMC7O";
 const BASE_URL="http://localhost:3000/";
 

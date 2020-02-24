@@ -67,7 +67,7 @@ export default function App() {
 
   _onPaymentIntent = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.createPaymentIntent(15000, 'eur', ['card'], '{ORDER10}', 1000, customerId).then((res) => {
+    stripe.createPaymentIntent(15000, 'eur', ['card'], '{ORDER10}', 1000, id1).then((res) => {
       //console.log(res);
       setChargeId(res.id)
     }).catch((err) => {

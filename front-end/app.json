@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Blank Template",
+    "name": "Expo Stripe",
     "slug": "expo-stripe",
     "privacy": "public",
     "sdkVersion": "36.0.0",
