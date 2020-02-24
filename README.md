@@ -12,8 +12,8 @@ Moreover, you have to change the public key in `front-end/lib/stripe.js`
 
 Run `npm start` in `back-end` folder and `expo start` in `front-end` folder.
 
-## Screen  :
+## Screenshot
 
 <div align="center">
-  <img src="https://github.com/maxgfr/expo-stripe/blob/master/.github/screen0.png"/>
+  <img src="https://github.com/maxgfr/expo-stripe/blob/master/.github/screen0.png" height="540" width="280"/>
 </div>
