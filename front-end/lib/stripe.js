@@ -35,13 +35,20 @@ export default class StripeConnector {
       callback(card);
     }
 
-    addFileVerification(file, accountId) {
+    addFileVerification(file, account_id) {
       return new Promise((resolve, reject) => {
         this.uploadDocument(file).then((res) => {
           var body = {
-            accountId: accountId,
+            account_id: account_id,
             data: {
-              file: res.id
+              individual: {
+                verification: {
+                  document: {
+                    front: res.id,
+                    back: null
+                  }
+                },
+              }
             }
           }
           fetch(BASE_URL+"updateAccount", {
@@ -74,13 +81,7 @@ export default class StripeConnector {
     createStripeAccount(country, type, email, requested_capabilities, business_type, individual, business_profile) {
       return new Promise((resolve, reject) => {
         var body = {
-          country: country,
-          type: type,
-          email: email,
-          requested_capabilities: requested_capabilities,
-          business_type: business_type,
-          business_profile: business_profile,
-          individual: individual
+          country, type, email, requested_capabilities, business_type, individual, business_profile
         }
         fetch(BASE_URL+"createStripeAccount", {
           body: JSON.stringify(body),
@@ -90,15 +91,10 @@ export default class StripeConnector {
       });
     }
 
-    createPaymentIntent(amount, currency, payment_method_types, transfer_group, application_fee_amount, destination) {
+    createPaymentIntent(amount, currency, payment_method_types, transfer_group, application_fee_amount, destination, customer) {
       return new Promise((resolve, reject) => {
         var body = {
-          amount: amount,
-          currency: currency,
-          payment_method_types: payment_method_types,
-          transfer_group: transfer_group,
-          application_fee_amount: application_fee_amount,
-          destination: destination
+          amount, currency, payment_method_types, transfer_group, application_fee_amount, destination, customer
         }
         fetch(BASE_URL+"paymentIntents", {
           body: JSON.stringify(body),
@@ -152,14 +148,12 @@ export default class StripeConnector {
       });
     }
 
-    paymentIntentsCustomer(amount, currency, payment_method_types) {
+    paymentIntentsCustomer(amount, currency, payment_method_types, customer) {
       return new Promise((resolve, reject) => {
         var body = {
-          amount: amount,
-          currency: currency,
-          payment_method_types: payment_method_types
+          amount, currency, payment_method_types, customer
         }
-        fetch(BASE_URL+"paymentIntents", {
+        fetch(BASE_URL+"paymentIntentsCustomer", {
           body: JSON.stringify(body),
           headers: { 'Content-type': 'application/json' },
           method: "POST"
@@ -167,11 +161,10 @@ export default class StripeConnector {
       });
     }
 
-    processPayment(paymentMethodId, paymentId) {
+    processPayment(paymentMethodId, paymentId ) {
       return new Promise((resolve, reject) => {
         var body = {
-          paymentMethodId: paymentMethodId,
-          paymentId: paymentId
+          paymentMethodId, paymentId
         }
         fetch(BASE_URL+"confirmPaymentIntents", {
           body: JSON.stringify(body),
@@ -192,9 +185,9 @@ export default class StripeConnector {
       });
     }
 
-    addBankAccount(account_id, country, currency, account_number) {
+    addBankAccount(account_id, country, currency, account_number, routing_number) {
       return new Promise((resolve, reject) => {
-        var body = { account_id, country, currency, account_number }
+        var body = { account_id, country, currency, account_number, routing_number }
         fetch(BASE_URL+"addBankAccount", {
           body: JSON.stringify(body),
           headers: { 'Content-type': 'application/json' },

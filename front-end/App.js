@@ -23,6 +23,7 @@ export default function App() {
   const [ibanId, setIbanId] = useState('');
   const [cardId, setCardId] = useState('');
   const [transferId, setTransferId] = useState('');
+  const [confirmIntent, setConfirmIntent] = useState('');
 
   useEffect(() => {
   }, [])
@@ -36,24 +37,25 @@ export default function App() {
         year: 1998
       },
       address: {
-          line1: "Place de la concorde",
-          city: "Paris",
-          state: "France",
-          postal_code: "75001",
+          line1: "327 Bridge Street",
+          city: "Tulsa",
+          state: "OK",
+          postal_code: "74146",
       },
       email: "max@sisilafamille.fr",
       first_name: "Maxime",
       last_name: "Gfr",
       gender: "male",
-      phone: "+33612345678"
+      phone: "918-510-2938",
+      ssn_last_4: "0000"
     }
     var business_profile = {
       mcc: '7311',
       url: 'https://app.sinaps.io/@max'
     }
     var promises = [];
-    promises.push(stripe.createStripeAccount("FR", "custom", "max@sisilafamille.fr", ["card_payments", "transfers"], 'individual', info, business_profile));
-    promises.push(stripe.createStripeAccount("FR", "custom", "contact@sisilafamille.fr", ["card_payments", "transfers"], 'individual', info, business_profile));
+    promises.push(stripe.createStripeAccount("US", "custom", "max@sisilafamille.fr", ["card_payments", "transfers"], 'individual', info, business_profile));
+    promises.push(stripe.createStripeAccount("US", "custom", "contact@sisilafamille.fr", ["card_payments", "transfers"], 'individual', info, business_profile));
     Promise.all(promises).then((res) => {
       //console.log(res[0], res[1]);
       var id_one = res[0].id;
@@ -68,9 +70,19 @@ export default function App() {
 
   _onPaymentIntent = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.createPaymentIntent(15000, 'eur', ['card'], '{ORDER10}', 1000, id1).then((res) => {
+    stripe.createPaymentIntent(9900, 'eur', ['card'], '{ORDER10}', 1000, id1, customerId).then((res) => {
       //console.log(res);
       setChargeId(res.id)
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
+  _onConfirmIntent = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.processPayment(paymentMethodId, chargeId).then((res) => {
+      //console.log(res);
+      setConfirmIntent(res.id)
     }).catch((err) => {
       console.log(err);
     })
@@ -96,7 +108,7 @@ export default function App() {
 
   _addCard = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.createPaymentMethodCard('4242424242424242', 5, 2021, '223').then((res) => {
+    stripe.createPaymentMethodCard('4000000000003097', 5, 2021, '233').then((res) => {
       //console.log(res);
       setPaymentMethodId(res.id)
     }).catch((err) => {
@@ -108,15 +120,15 @@ export default function App() {
     let stripe = StripeConnector.getInstance();
     stripe.attachPaymentMethodCard(paymentMethodId, customerId).then((res) => {
       //console.log(res);
-      setAttach("Done");
+      setAttach(res.id);
     }).catch((err) => {
       console.log(err);
     })
   }
 
-  _onPaymentIntentCustomer = () => {
+  _onPaymentCustomer = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.paymentIntentsCustomer(15000, 'eur', ['card']).then((res) => {
+    stripe.paymentIntentsCustomer(15000, 'eur', ['card'], customerId).then((res) => {
       //console.log(res);
       setPaymentIntentCustomerId(res.id)
     }).catch((err) => {
@@ -126,7 +138,7 @@ export default function App() {
 
   _onAddBankAccount = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.addBankAccount(id2, 'DE', 'EUR', 'DE89370400440532013000').then((res) => {
+    stripe.addBankAccount(id2, 'US', 'USD', '000123456789', '111000000').then((res) => {
       //console.log(res);
       setIbanId(res.id)
     }).catch((err) => {
@@ -148,7 +160,7 @@ export default function App() {
     let stripe = StripeConnector.getInstance();
     stripe.processPayment(paymentMethodId, paymentIntentCustomerId).then((res) => {
       //console.log(res);
-      setProcessPayment("Done")
+      setProcessPayment(res.id)
     }).catch((err) => {
       console.log(err);
     })
@@ -197,7 +209,7 @@ export default function App() {
       let stripe = StripeConnector.getInstance();
       stripe.addFileVerification(result.uri, id2).then((res) => {
         console.log(res);
-        setVerifId(res.Id)
+        setVerifId(res.email)
       }).catch((err) => {
         console.log(err);
       })
@@ -208,6 +220,20 @@ export default function App() {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
 
+      <Text style={{fontSize: 20, fontWeight: 'bold', marginVertical: 10}}>Stripe basic</Text>
+      <Button onPress={_onCreateCustomer} title="Create customer"/>
+      <Text>{customerId}</Text>
+      <Button onPress={_addCard} title="Add a card"/>
+      <Text>{paymentMethodId}</Text>
+      <Button onPress={_attachCard} title="Attach card to customer"/>
+      <Text>{attach}</Text>
+      <Button onPress={_onPaymentCustomer} title="Use Payment Intent customer"/>
+      <Text>{paymentIntentCustomerId}</Text>
+      <Button onPress={_onProcessPaymentCustomer} title="Process payment Intent customer"/>
+      <Text>{processPayment}</Text>
+
+      <View style={{width: windowWidth, height: 1, backgroundColor: 'black', marginTop: 10 }} />
+      <Text style={{fontSize: 20, fontWeight: 'bold', marginVertical: 10}}>Stripe connect</Text>
       <Button onPress={_onCreateCustomAccount} title="Create custom account"/>
       <Text>{accountId}</Text>
       <Button onPress={_onAddBankAccount} title="Add bank account"/>
@@ -216,27 +242,20 @@ export default function App() {
       <Text>{token}</Text>
       <Button onPress={_onAddCard} title="Add a debit card for US payout account"/>
       <Text>{cardId}</Text>
-      <Button onPress={_onTopUp} title="Top up for US account"/>
-      <Text>{topUp}</Text>
-      <Button onPress={_onPaymentIntent} title="Use Payment Intent account"/>
+      {/*
+        <Button onPress={_onTopUp} title="Top up for US account"/>
+        <Text>{topUp}</Text>
+        <Button onPress={_onTransfer} title="Create a transfer for US account"/>
+        <Text>{transferId}</Text>
+      */}
+      <Button onPress={_onPaymentIntent} title="Create charge"/>
       <Text>{chargeId}</Text>
-      <Button onPress={_onTransfer} title="Create a transfer for US account"/>
-      <Text>{transferId}</Text>
+      <Button onPress={_onConfirmIntent} title="Confirm charge by using basic payment card added previously"/>
+      <Text>{confirmIntent}</Text>
+
       <Button onPress={_onVerifyAccount} title="Verify account"/>
       <Text>{verifId}</Text>
 
-      <View style={{width: windowWidth, height: 1, backgroundColor: 'black' }} />
-
-      <Button onPress={_onCreateCustomer} title="Create customer"/>
-      <Text>{customerId}</Text>
-      <Button onPress={_addCard} title="Add a card"/>
-      <Text>{paymentMethodId}</Text>
-      <Button onPress={_attachCard} title="Attach card to customer"/>
-      <Text>{attach}</Text>
-      <Button onPress={_onPaymentIntentCustomer} title="Use Payment Intent customer"/>
-      <Text>{paymentIntentCustomerId}</Text>
-      <Button onPress={_onProcessPaymentCustomer} title="Process payment Intent customer"/>
-      <Text>{processPayment}</Text>
 
     </ScrollView>
   );

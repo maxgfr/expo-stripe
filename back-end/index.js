@@ -81,6 +81,7 @@ app.post('/paymentIntents', (req, res, next) => {
     payment_method_types: req.body.payment_method_types,
     transfer_group: req.body.transfer_group,
     application_fee_amount: req.body.application_fee_amount,
+    customer: req.body.customer,
     transfer_data: {
       destination: req.body.destination
     }
@@ -115,6 +116,7 @@ app.post('/paymentIntentsCustomer', (req, res, next) => {
   stripe.paymentIntents.create({
     amount: req.body.amount,
     currency: req.body.currency,
+    customer: req.body.customer,
     payment_method_types: req.body.payment_method_types
   }).then((resultat) => {
     console.log(resultat)
@@ -202,7 +204,8 @@ app.post('/addBankAccount', (req, res, next) => {
       country: req.body.country,
       currency: req.body.currency,
       account_number: req.body.account_number,
-      account_holder_type: "individual"
+      account_holder_type: "individual",
+      routing_number: req.body.routing_number
     }
   }).then((resultat) => {
     console.log(resultat)
