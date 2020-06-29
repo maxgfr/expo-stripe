@@ -195,4 +195,34 @@ app.post('/payout', (req, res, next) => {
   });
 });
 
+app.post('/addBankAccount', (req, res, next) => {
+  stripe.accounts.createExternalAccount(req.body.account_id, {
+    external_account: {
+      object: "bank_account",
+      country: req.body.country,
+      currency: req.body.currency,
+      account_number: req.body.account_number,
+      account_holder_type: "individual"
+    }
+  }).then((resultat) => {
+    console.log(resultat)
+    res.json(resultat);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+app.post('/addCard', (req, res, next) => {
+  stripe.accounts.createExternalAccount(req.body.account_id, {
+    external_account: req.body.token
+  }).then((resultat) => {
+    console.log(resultat)
+    res.json(resultat);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 app.listen(port, () => console.log(`The application is listening on port ${port}!`))

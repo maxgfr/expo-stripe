@@ -20,6 +20,8 @@ export default function App() {
   const [processPayment, setProcessPayment] = useState('');
   const [topUp, setTopUp] = useState('');
   const [verifId, setVerifId] = useState('');
+  const [ibanId, setIbanId] = useState('');
+  const [cardId, setCardId] = useState('');
 
   useEffect(() => {
   }, [])
@@ -75,7 +77,7 @@ export default function App() {
 
   _onPay = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.getPaymentToken('4242424242424242', 5, 2021, '223', 'Maxime Gfr', function(res) {
+    stripe.getPaymentToken('5200828282828210', 5, 2021, '223', 'Maxime Gfr', 'usd', function(res) {
       //console.log(res);
       setToken(res.id);
     })
@@ -121,6 +123,26 @@ export default function App() {
     })
   }
 
+  _onAddBankAccount = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.addBankAccount(id2, 'DE', 'EUR', 'DE89370400440532013000').then((res) => {
+      //console.log(res);
+      setIbanId(res.id)
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
+  _onAddCard = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.addCard(id2, token).then((res) => {
+      //console.log(res);
+      setCardId(res.id)
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
   _onProcessPaymentCustomer = () => {
     let stripe = StripeConnector.getInstance();
     stripe.processPayment(paymentMethodId, paymentIntentCustomerId).then((res) => {
@@ -133,9 +155,9 @@ export default function App() {
 
   _onTopUp = () => {
     let stripe = StripeConnector.getInstance();
-    stripe.topUp(20, 'usd', 'top up by account 1', 'topup').then((res) => {
+    stripe.topUp(2000, 'usd', 'top up by account 1', 'topup').then((res) => {
       //console.log(res);
-      setTopUp("Done")
+      setTopUp(res.id)
     }).catch((err) => {
       console.log(err);
     })
@@ -174,19 +196,21 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-      <Button onPress={_onPay} title="Get Payment token (charge)"/>
-      <Text>{token}</Text>
-
-      <View style={{width: windowWidth, height: 1, backgroundColor: 'black' }} />
 
       <Button onPress={_onCreateCustomAccount} title="Create custom account"/>
       <Text>{accountId}</Text>
-      <Button onPress={_onVerifyAccount} title="Verify account"/>
-      <Text>{verifId}</Text>
+      <Button onPress={_onAddBankAccount} title="Add bank account"/>
+      <Text>{ibanId}</Text>
+      <Button onPress={_onPay} title="Get Card token"/>
+      <Text>{token}</Text>
+      <Button onPress={_onAddCard} title="Add a debit card for US payout account"/>
+      <Text>{cardId}</Text>
       <Button onPress={_onTopUp} title="Top up"/>
       <Text>{topUp}</Text>
       <Button onPress={_onPaymentIntent} title="Use Payment Intent account"/>
       <Text>{chargeId}</Text>
+      <Button onPress={_onVerifyAccount} title="Verify account"/>
+      <Text>{verifId}</Text>
 
       <View style={{width: windowWidth, height: 1, backgroundColor: 'black' }} />
 

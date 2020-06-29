@@ -17,7 +17,7 @@ export default class StripeConnector {
         return this.myInstance;
     }
 
-    async getPaymentToken(number, expMonth, expYear, cvc, name, callback) {
+    async getPaymentToken(number, expMonth, expYear, cvc, name, currency, callback) {
 
       var information = {
         card: {
@@ -25,7 +25,8 @@ export default class StripeConnector {
           exp_month: expMonth,
           exp_year: expYear,
           cvc: cvc,
-          name: name
+          name: name,
+          currency: currency
         }
       }
 
@@ -191,4 +192,25 @@ export default class StripeConnector {
       });
     }
 
+    addBankAccount(account_id, country, currency, account_number) {
+      return new Promise((resolve, reject) => {
+        var body = { account_id, country, currency, account_number }
+        fetch(BASE_URL+"addBankAccount", {
+          body: JSON.stringify(body),
+          headers: { 'Content-type': 'application/json' },
+          method: "POST"
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
+    }
+
+    addCard(account_id, token) {
+      return new Promise((resolve, reject) => {
+        var body = { account_id, token }
+        fetch(BASE_URL+"addCard", {
+          body: JSON.stringify(body),
+          headers: { 'Content-type': 'application/json' },
+          method: "POST"
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
+    }
 }
