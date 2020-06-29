@@ -22,6 +22,7 @@ export default function App() {
   const [verifId, setVerifId] = useState('');
   const [ibanId, setIbanId] = useState('');
   const [cardId, setCardId] = useState('');
+  const [transferId, setTransferId] = useState('');
 
   useEffect(() => {
   }, [])
@@ -163,6 +164,16 @@ export default function App() {
     })
   }
 
+  _onTransfer = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.createTransfer(2000, 'eur', id1, 'ORDER_95').then((res) => {
+      //console.log(res);
+      setTransferId(res.id)
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
   _onVerifyAccount = async () => {
 
     if (Constants.platform.ios) {
@@ -205,10 +216,12 @@ export default function App() {
       <Text>{token}</Text>
       <Button onPress={_onAddCard} title="Add a debit card for US payout account"/>
       <Text>{cardId}</Text>
-      <Button onPress={_onTopUp} title="Top up"/>
+      <Button onPress={_onTopUp} title="Top up for US account"/>
       <Text>{topUp}</Text>
       <Button onPress={_onPaymentIntent} title="Use Payment Intent account"/>
       <Text>{chargeId}</Text>
+      <Button onPress={_onTransfer} title="Create a transfer for US account"/>
+      <Text>{transferId}</Text>
       <Button onPress={_onVerifyAccount} title="Verify account"/>
       <Text>{verifId}</Text>
 

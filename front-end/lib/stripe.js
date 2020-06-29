@@ -213,4 +213,17 @@ export default class StripeConnector {
         }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
       });
     }
+
+    createTransfer(amount, currency, destination, transfer_group) {
+      return new Promise((resolve, reject) => {
+        var body = {
+          amount, currency, destination, transfer_group
+        }
+        fetch(BASE_URL+"transfer", {
+          body: JSON.stringify(body),
+          headers: { 'Content-type': 'application/json' },
+          method: "POST"
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
+    }
 }

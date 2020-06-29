@@ -225,4 +225,19 @@ app.post('/addCard', (req, res, next) => {
   });
 });
 
+app.post('/transfer', (req, res, next) => {
+  stripe.transfers.create({
+    amount: req.body.amount,
+    currency: req.body.currency,
+    destination: req.body.destination,
+    transfer_group: req.body.transfer_group
+  }).then((resultat) => {
+    console.log(resultat)
+    res.json(resultat);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 app.listen(port, () => console.log(`The application is listening on port ${port}!`))
