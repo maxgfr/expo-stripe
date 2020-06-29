@@ -36,11 +36,11 @@ export default class StripeConnector {
 
     addFileVerification(file, accountId) {
       return new Promise((resolve, reject) => {
-        this.uploadDocument(file).then((fileId) => {
+        this.uploadDocument(file).then((res) => {
           var body = {
             accountId: accountId,
             data: {
-              file: fileId
+              file: res.id
             }
           }
           fetch(BASE_URL+"updateAccount", {
@@ -57,12 +57,13 @@ export default class StripeConnector {
     uploadDocument(file) {
       return new Promise((resolve, reject) => {
         var fd = new FormData();
-        fd.set('purpose', 'identity_document');
-        fd.set('file', file);
+        fd.append('purpose', 'identity_document');
+        fd.append('file', {uri: file, name: Date.now()+Math.floor(Math.random() * 100)+'.jpg', type: 'image/jpeg'});
         fetch('https://files.stripe.com/v1/files', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${STRIPE_PK}`
+            'Authorization': `Bearer ${STRIPE_PK}`,
+            'Content-Type': 'multipart/form-data'
           },
           body: fd
         }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
@@ -172,6 +173,17 @@ export default class StripeConnector {
           paymentId: paymentId
         }
         fetch(BASE_URL+"confirmPaymentIntents", {
+          body: JSON.stringify(body),
+          headers: { 'Content-type': 'application/json' },
+          method: "POST"
+        }).then((response) => response.json()).then((responseJson) => resolve(responseJson)).catch((err) => reject(err));
+      });
+    }
+
+    topUp(amount, currency, description, statement_descriptor) {
+      return new Promise((resolve, reject) => {
+        var body = { amount, currency, description, statement_descriptor }
+        fetch(BASE_URL+"topUp", {
           body: JSON.stringify(body),
           headers: { 'Content-type': 'application/json' },
           method: "POST"

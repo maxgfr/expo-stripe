@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Button, Text } from 'react-native';
+import { View, ScrollView, Button, Text, Dimensions } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import Constants from 'expo-constants';
+import * as Permissions from 'expo-permissions';
 import StripeConnector from './lib/stripe';
 
 export default function App() {
 
+  const windowWidth = Dimensions.get('window').width;
   const [accountId, setAccountId] = useState('');
   const [id1, setId1] = useState('');
   const [id2, setId2] = useState('');
@@ -14,6 +18,8 @@ export default function App() {
   const [attach, setAttach] = useState('');
   const [paymentIntentCustomerId, setPaymentIntentCustomerId] = useState('');
   const [processPayment, setProcessPayment] = useState('');
+  const [topUp, setTopUp] = useState('');
+  const [verifId, setVerifId] = useState('');
 
   useEffect(() => {
   }, [])
@@ -40,7 +46,7 @@ export default function App() {
     }
     var business_profile = {
       mcc: '7311',
-      url: 'https://sinaps.io/@max'
+      url: 'https://app.sinaps.io/@max'
     }
     var promises = [];
     promises.push(stripe.createStripeAccount("FR", "custom", "max@sisilafamille.fr", ["card_payments", "transfers"], 'individual', info, business_profile));
@@ -57,14 +63,6 @@ export default function App() {
     })
   }
 
-  _onPay = () => {
-    let stripe = StripeConnector.getInstance();
-    stripe.getPaymentToken('4242424242424242', 5, 2021, '223', 'Maxime Gfr', function(res) {
-      //console.log(res);
-      setToken(res.id);
-    })
-  }
-
   _onPaymentIntent = () => {
     let stripe = StripeConnector.getInstance();
     stripe.createPaymentIntent(15000, 'eur', ['card'], '{ORDER10}', 1000, id1).then((res) => {
@@ -72,6 +70,14 @@ export default function App() {
       setChargeId(res.id)
     }).catch((err) => {
       console.log(err);
+    })
+  }
+
+  _onPay = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.getPaymentToken('4242424242424242', 5, 2021, '223', 'Maxime Gfr', function(res) {
+      //console.log(res);
+      setToken(res.id);
     })
   }
 
@@ -125,15 +131,64 @@ export default function App() {
     })
   }
 
+  _onTopUp = () => {
+    let stripe = StripeConnector.getInstance();
+    stripe.topUp(20, 'usd', 'top up by account 1', 'topup').then((res) => {
+      //console.log(res);
+      setTopUp("Done")
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
+  _onVerifyAccount = async () => {
+
+    if (Constants.platform.ios) {
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1
+    });
+
+    //console.log(result);
+
+    if (!result.cancelled) {
+      let stripe = StripeConnector.getInstance();
+      stripe.addFileVerification(result.uri, id2).then((res) => {
+        console.log(res);
+        setVerifId(res.Id)
+      }).catch((err) => {
+        console.log(err);
+      })
+    }
+
+  }
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
       <Button onPress={_onPay} title="Get Payment token (charge)"/>
       <Text>{token}</Text>
 
+      <View style={{width: windowWidth, height: 1, backgroundColor: 'black' }} />
+
       <Button onPress={_onCreateCustomAccount} title="Create custom account"/>
       <Text>{accountId}</Text>
+      <Button onPress={_onVerifyAccount} title="Verify account"/>
+      <Text>{verifId}</Text>
+      <Button onPress={_onTopUp} title="Top up"/>
+      <Text>{topUp}</Text>
       <Button onPress={_onPaymentIntent} title="Use Payment Intent account"/>
       <Text>{chargeId}</Text>
+
+      <View style={{width: windowWidth, height: 1, backgroundColor: 'black' }} />
 
       <Button onPress={_onCreateCustomer} title="Create customer"/>
       <Text>{customerId}</Text>

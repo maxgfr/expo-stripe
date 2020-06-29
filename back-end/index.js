@@ -167,4 +167,32 @@ app.post('/transfer', (req, res, next) => {
   });
 });
 
+app.post('/topUp', (req, res, next) => {
+  stripe.topups.create({
+    amount: req.body.amount,
+    currency: req.body.currency,
+    description: req.body.description,
+    statement_descriptor: req.body.statement_descriptor
+  }).then((resultat) => {
+    console.log(resultat)
+    res.json(resultat);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
+app.post('/payout', (req, res, next) => {
+  stripe.payouts.create({
+    amount: req.body.amount,
+    currency: req.body.currency
+  }).then((resultat) => {
+    console.log(resultat)
+    res.json(resultat);
+  }).catch((err) => {
+    console.log(err);
+    res.json(err);
+  });
+});
+
 app.listen(port, () => console.log(`The application is listening on port ${port}!`))
